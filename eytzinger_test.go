@@ -3,6 +3,7 @@ package eytzinger
 import (
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -109,11 +110,21 @@ func TestSearch(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.target, func(t *testing.T) {
+			data := Eytzinger(tt.data)
+			index := genIndex(len(tt.data))
+			index = append(index, len(tt.data))
+
+			// Test Search
 			{
-				data := Eytzinger(tt.data)
-				index := genIndex(len(tt.data))
-				index = append(index, len(tt.data))
 				pos, found := Search(data, tt.target)
+				if index[pos] != tt.wantPos || found != tt.wantFound {
+					t.Errorf("BinarySearch got (%v, %v), want (%v, %v)", index[pos], found, tt.wantPos, tt.wantFound)
+				}
+			}
+
+			// Test SearchFunc
+			{
+				pos, found := SearchFunc(data, tt.target, strings.Compare)
 				if index[pos] != tt.wantPos || found != tt.wantFound {
 					t.Errorf("BinarySearch got (%v, %v), want (%v, %v)", index[pos], found, tt.wantPos, tt.wantFound)
 				}

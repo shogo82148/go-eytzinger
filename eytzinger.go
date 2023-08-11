@@ -70,6 +70,25 @@ func Search[S ~[]E, E cmp.Ordered](x S, target E) (int, bool) {
 	return k, k < len(x) && (x[k] == target || isNaN(target) && isNaN(x[k]))
 }
 
+// SearchFunc works like [Search] but uses a custom comparison function.
+// The slice must be ordered by Eytzinger Layout.
+func SearchFunc[S ~[]E, E, T any](x S, target T, cmp func(E, T) int) (int, bool) {
+	k := 1
+	for k <= len(x) {
+		if cmp(x[k-1], target) < 0 {
+			k = 2*k + 1
+		} else {
+			k = 2 * k
+		}
+	}
+	k >>= bits.TrailingZeros(^uint(k)) + 1
+	if k == 0 {
+		return len(x), false
+	}
+	k--
+	return k, k < len(x) && cmp(x[k], target) == 0
+}
+
 // isNaN reports whether x is a NaN without requiring the math package.
 // This will always return false if T is not floating-point.
 func isNaN[T cmp.Ordered](x T) bool {
